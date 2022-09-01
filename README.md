@@ -14,5 +14,7 @@ The template implements monitoring of the current state of the "State" base stat
 <b>Synchronized</b> - if the base station is in sync with other stations;<br>
 <b>Unsynchronized</b> - if the base station has lost synchronization.
 
+![image](https://user-images.githubusercontent.com/34303263/187915692-de56d038-47f4-4d5f-9086-b8d11c6ed7d7.png)
+
 The current status is received once every 1 minute, if for some reason zabbix receives an Unsynchronized status from the base station, a trigger will trigger and you will see this event in the list of problems.
 
