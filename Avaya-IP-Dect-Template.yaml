@@ -1,0 +1,104 @@
+zabbix_export:
+  version: '6.0'
+  date: '2022-09-01T11:23:26Z'
+  groups:
+    -
+      uuid: b5c37aa71630433bb83ac357b888af06
+      name: 'Templates/Telephony/Avaya IP Dect'
+  templates:
+    -
+      uuid: 917512ec26a94b4392606630cfc42fd7
+      template: 'Avaya IP DECT R4'
+      name: 'Avaya IP DECT R4'
+      templates:
+        -
+          name: 'ICMP Ping'
+      groups:
+        -
+          name: 'Templates/Telephony/Avaya IP Dect'
+      items:
+        -
+          uuid: 5353d70a5f0a4009808be8a0872655e7
+          name: State
+          type: HTTP_AGENT
+          key: check_dect_state
+          trends: '0'
+          value_type: CHAR
+          authtype: BASIC
+          username: '{$DECT.USER}'
+          password: '{$DECT.PASS}'
+          preprocessing:
+            -
+              type: JAVASCRIPT
+              parameters:
+                - |
+                  if (value.includes('Master')) return 'Master'
+                  if (value.includes('synchronized')) return 'Synchronized'
+                  if (value.includes('Searching for sync source') )return 'Unsynchronized'
+          url: 'https://{HOST.IP}/RFPSTAT0/mod_cmd.xml'
+          query_fields:
+            -
+              name: cmd
+              value: rfp-stat2
+            -
+              name: xsl
+              value: rfpsyncstat.xsl
+          output_format: JSON
+          triggers:
+            -
+              uuid: 46be6f4f5b2f473fb6b6b2a3d5662b52
+              expression: 'find(/Avaya IP DECT R4/check_dect_state,,"eq","Unsynchronized")=1'
+              name: State_sync
+              priority: HIGH
+              manual_close: 'YES'
+        -
+          uuid: 7981ac50a7254f01a60d8b9bf06c1546
+          name: MacAddress
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.2.2.1.6.1
+          key: ifPhysAddress.1
+          history: 1d
+          trends: '0'
+          value_type: CHAR
+        -
+          uuid: 757735bdfa684ccb928b8cedd59ce989
+          name: SystemName
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.5.0
+          key: sysName.0
+          history: 1d
+          trends: '0'
+          value_type: CHAR
+        -
+          uuid: a299cfb3abfe4ab4bf83308fa21ec89a
+          name: Description
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.1.0
+          key: 'system.descr[sysDescr.0]'
+          history: 1d
+          trends: '0'
+          value_type: CHAR
+        -
+          uuid: 654f4dde71334bef941cdc732ea1f545
+          name: UpTime
+          type: SNMP_AGENT
+          snmp_oid: .1.3.6.1.2.1.1.3.0
+          key: sysUpTimeInstance
+          history: 1d
+          trends: '0'
+          units: uptime
+          preprocessing:
+            -
+              type: RTRIM
+              parameters:
+                - '00'
+      macros:
+        -
+          macro: '{$DECT.PASS}'
+          value: password
+        -
+          macro: '{$DECT.USER}'
+          value: login
+        -
+          macro: '{$SNMP_COMMUNITY}'
+          value: CommunityName
